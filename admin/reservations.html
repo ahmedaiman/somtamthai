@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservations - Admin - Som Tam Thai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+        body { background-color: #f3f4f6; font-family: 'DM Sans', sans-serif; color: #333; }
+        .display-font { font-family: 'Lora', serif; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { cream: '#FDFBF7', green: '#1A4D2E', terracotta: '#E36414', gold: '#FFB703' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased h-screen flex overflow-hidden">
+    <div id="root" class="w-full h-full flex"></div>
+
+    <script type="text/babel">
+        // --- Dummy Data ---
+        const INITIAL_RESERVATIONS = [
+            { id: "RES-2026-0101", date: "1 Apr 2026", time: "18:30", name: "Ibrahim Rasheed", phone: "+960 791 2345", party: 4, table: "Table 1", status: "Confirmed", notes: "Window seat preferred" },
+            { id: "RES-2026-0102", date: "1 Apr 2026", time: "19:00", name: "Zara Ahmed", phone: "+960 792 3456", party: 2, table: "Table 2", status: "Confirmed", notes: "" },
+            { id: "RES-2026-0103", date: "1 Apr 2026", time: "20:00", name: "Hassan Ali", phone: "+960 793 4567", party: 3, table: "Table 3", status: "Pending", notes: "Birthday celebration" },
+            { id: "RES-2026-0104", date: "2 Apr 2026", time: "18:00", name: "Mariyam Latheef", phone: "+960 794 5678", party: 5, table: "Table 1", status: "Confirmed", notes: "" },
+            { id: "RES-2026-0105", date: "2 Apr 2026", time: "19:30", name: "Ali Waheed", phone: "+960 795 6789", party: 2, table: "Table 2", status: "Pending", notes: "Vegetarian menu needed" },
+            { id: "RES-2026-0106", date: "3 Apr 2026", time: "19:00", name: "Fathimath Shiyam", phone: "+960 796 7890", party: 4, table: "Table 3", status: "Confirmed", notes: "" },
+        ];
+
+        const TABLES = [
+            { id: "Table 1", capacity: 6, description: "Main hall, window view" },
+            { id: "Table 2", capacity: 2, description: "Corner booth, intimate" },
+            { id: "Table 3", capacity: 4, description: "Centre hall" },
+        ];
+
+        const STATUS_COLORS = {
+            Confirmed: "bg-green-100 text-green-700",
+            Pending: "bg-amber-100 text-amber-700",
+            Cancelled: "bg-red-100 text-red-600",
+        };
+
+        // Admin Sidebar
+        const AdminSidebar = ({ currentRoute }) => (
+            <aside className="bg-brand-green text-white w-64 flex-shrink-0 flex flex-col h-full z-20">
+                <div className="p-6 border-b border-white/10 flex items-center gap-3">
+                    <div className="w-8 h-8 bg-brand-gold rounded-md flex items-center justify-center text-brand-green font-bold text-xl">S</div>
+                    <div>
+                        <h1 className="display-font font-bold text-lg leading-tight">Som Tam Thai</h1>
+                        <span className="text-[10px] uppercase tracking-widest text-brand-gold font-bold">Admin Panel</span>
+                    </div>
+                </div>
+                <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+                    {[
+                        { id: 'dashboard', icon: 'layout-dashboard', label: 'Dashboard', link: 'dashboard.html' },
+                        { id: 'orders', icon: 'shopping-bag', label: 'Orders', badge: '6', link: 'orders.html' },
+                        { id: 'reservations', icon: 'calendar', label: 'Reservations', link: 'reservations.html' },
+                        { id: 'menu', icon: 'menu', label: 'Menu', link: 'menu.html' },
+                        { id: 'schedule', icon: 'clock', label: 'Schedule', link: 'schedule.html' },
+                        { id: 'customers', icon: 'users', label: 'Customers', link: 'customers.html' },
+                        { id: 'settings', icon: 'settings', label: 'Settings', link: 'settings.html' }
+                    ].map(item => (
+                        <a key={item.id} href={item.link} className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${currentRoute === item.id ? 'bg-white/10 text-brand-gold font-bold' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}>
+                            <div className="flex items-center">
+                                <i data-lucide={item.icon} className={`w-5 h-5 mr-3 ${currentRoute === item.id ? 'text-brand-gold' : 'text-gray-400'}`}></i>
+                                {item.label}
+                            </div>
+                            {item.badge && <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-500 text-white">{item.badge}</span>}
+                        </a>
+                    ))}
+                </nav>
+                <div className="p-4 border-t border-white/10">
+                    <div className="flex items-center gap-3 mb-4 px-2">
+                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                            <i data-lucide="user" className="w-4 h-4 text-white"></i>
+                        </div>
+                        <div>
+                            <div className="text-sm font-bold">Admin User</div>
+                            <div className="text-xs text-gray-400">Restaurant Admin</div>
+                        </div>
+                    </div>
+                    <button className="w-full flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 py-2 rounded transition-colors">
+                        <i data-lucide="log-out" className="w-4 h-4"></i> Sign Out
+                    </button>
+                </div>
+            </aside>
+        );
+
+        const App = () => {
+            const [reservations, setReservations] = React.useState(INITIAL_RESERVATIONS);
+            const [filterDate, setFilterDate] = React.useState("All");
+            const [filterStatus, setFilterStatus] = React.useState("All");
+            const [selectedRes, setSelectedRes] = React.useState(null);
+            const [showDetail, setShowDetail] = React.useState(false);
+            const [showNewModal, setShowNewModal] = React.useState(false);
+            const [showCancelConfirm, setShowCancelConfirm] = React.useState(false);
+
+            React.useEffect(() => { lucide.createIcons(); });
+
+            const dates = ["All", ...Array.from(new Set(reservations.map(r => r.date)))];
+            const statuses = ["All", "Confirmed", "Pending", "Cancelled"];
+
+            const filtered = reservations.filter(r => {
+                const dateMatch = filterDate === "All" || r.date === filterDate;
+                const statusMatch = filterStatus === "All" || r.status === filterStatus;
+                return dateMatch && statusMatch;
+            });
+
+            const handleConfirm = (id) => {
+                setReservations(prev => prev.map(r => r.id === id ? { ...r, status: "Confirmed" } : r));
+                if (selectedRes?.id === id) setSelectedRes(prev => ({ ...prev, status: "Confirmed" }));
+            };
+
+            const handleCancel = (id) => {
+                setReservations(prev => prev.map(r => r.id === id ? { ...r, status: "Cancelled" } : r));
+                setShowCancelConfirm(false);
+                setShowDetail(false);
+            };
+
+            const todayCount = reservations.filter(r => r.date === "1 Apr 2026" && r.status !== "Cancelled").length;
+            const pendingCount = reservations.filter(r => r.status === "Pending").length;
+            const confirmedCount = reservations.filter(r => r.status === "Confirmed").length;
+
+            return (
+                <div className="flex w-full h-full">
+                    <AdminSidebar currentRoute="reservations" />
+
+                    {/* Detail Drawer */}
+                    {showDetail && selectedRes && (
+                        <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
+                            <div className="bg-white w-full max-w-md h-full shadow-xl flex flex-col overflow-y-auto">
+                                <div className="bg-brand-green text-white p-6 flex justify-between items-start flex-shrink-0">
+                                    <div>
+                                        <p className="text-xs text-brand-gold font-bold uppercase tracking-wider mb-1">{selectedRes.id}</p>
+                                        <h3 className="text-xl font-bold">{selectedRes.name}</h3>
+                                        <p className="text-sm text-white/70 mt-1">{selectedRes.date} at {selectedRes.time}</p>
+                                    </div>
+                                    <button onClick={() => setShowDetail(false)} className="text-white/70 hover:text-white p-1">
+                                        <i data-lucide="x" className="w-5 h-5"></i>
+                                    </button>
+                                </div>
+
+                                <div className="p-6 space-y-5 flex-1">
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div className="bg-gray-50 rounded-lg p-3">
+                                            <div className="text-xs text-gray-500 mb-0.5">Party Size</div>
+                                            <div className="font-bold text-gray-900">{selectedRes.party} People</div>
+                                        </div>
+                                        <div className="bg-gray-50 rounded-lg p-3">
+                                            <div className="text-xs text-gray-500 mb-0.5">Table</div>
+                                            <div className="font-bold text-gray-900">{selectedRes.table}</div>
+                                        </div>
+                                        <div className="bg-gray-50 rounded-lg p-3">
+                                            <div className="text-xs text-gray-500 mb-0.5">Phone</div>
+                                            <div className="font-bold text-gray-900">{selectedRes.phone}</div>
+                                        </div>
+                                        <div className="bg-gray-50 rounded-lg p-3">
+                                            <div className="text-xs text-gray-500 mb-0.5">Status</div>
+                                            <span className={`text-xs font-bold px-2 py-1 rounded-full ${STATUS_COLORS[selectedRes.status]}`}>{selectedRes.status}</span>
+                                        </div>
+                                    </div>
+
+                                    {selectedRes.notes && (
+                                        <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
+                                            <div className="text-xs font-bold text-amber-700 mb-1 flex items-center">
+                                                <i data-lucide="message-square" className="w-3 h-3 mr-1"></i> Guest Notes
+                                            </div>
+                                            <p className="text-sm text-amber-900">{selectedRes.notes}</p>
+                                        </div>
+                                    )}
+
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-700 block mb-2">Reassign Table</label>
+                                        <select className="w-full border border-gray-300 rounded-lg p-2.5 text-sm bg-white focus:outline-none focus:border-brand-green">
+                                            {TABLES.map(t => (
+                                                <option key={t.id} selected={t.id === selectedRes.table}>{t.id} — {t.description} (cap. {t.capacity})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-700 block mb-2">Internal Note</label>
+                                        <textarea className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:outline-none focus:border-brand-green" rows="2" placeholder="Add a note for the team..."></textarea>
+                                    </div>
+                                </div>
+
+                                <div className="p-6 border-t border-gray-100 flex flex-col gap-2 flex-shrink-0">
+                                    {selectedRes.status === "Pending" && (
+                                        <button onClick={() => handleConfirm(selectedRes.id)} className="w-full bg-brand-green text-white font-bold py-3 rounded-lg hover:bg-green-900 transition-colors flex items-center justify-center gap-2">
+                                            <i data-lucide="check" className="w-4 h-4"></i> Confirm Reservation
+                                        </button>
+                                    )}
+                                    {selectedRes.status !== "Cancelled" && (
+                                        <button onClick={() => setShowCancelConfirm(true)} className="w-full border border-red-200 text-red-600 hover:bg-red-50 font-bold py-3 rounded-lg transition-colors text-sm">
+                                            Cancel Reservation
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Cancel Confirm Modal */}
+                    {showCancelConfirm && (
+                        <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
+                            <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6">
+                                <h3 className="text-lg font-bold text-gray-900 mb-2">Cancel this reservation?</h3>
+                                <p className="text-sm text-gray-500 mb-6">This will notify the guest and free up the table slot.</p>
+                                <div className="flex justify-end gap-3">
+                                    <button onClick={() => setShowCancelConfirm(false)} className="px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-lg">Keep</button>
+                                    <button onClick={() => handleCancel(selectedRes.id)} className="px-4 py-2 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg">Yes, Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* New Reservation Modal */}
+                    {showNewModal && (
+                        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                            <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-xl font-bold text-gray-900">New Reservation</h3>
+                                    <button onClick={() => setShowNewModal(false)}><i data-lucide="x" className="w-5 h-5 text-gray-400 hover:text-gray-700"></i></button>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-700 block mb-1">Guest Name</label>
+                                            <input type="text" className="w-full border border-gray-300 p-2.5 text-sm rounded-lg focus:outline-none focus:border-brand-green" />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-700 block mb-1">Phone</label>
+                                            <input type="text" className="w-full border border-gray-300 p-2.5 text-sm rounded-lg focus:outline-none focus:border-brand-green" placeholder="+960 7XX XXXX" />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-700 block mb-1">Date</label>
+                                            <input type="date" className="w-full border border-gray-300 p-2.5 text-sm rounded-lg focus:outline-none focus:border-brand-green bg-white" />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-700 block mb-1">Time</label>
+                                            <select className="w-full border border-gray-300 p-2.5 text-sm rounded-lg bg-white focus:outline-none focus:border-brand-green">
+                                                {["18:00","18:30","19:00","19:30","20:00","20:30","21:00"].map(t => <option key={t}>{t}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-700 block mb-1">Party Size</label>
+                                            <input type="number" min="1" max="10" defaultValue="2" className="w-full border border-gray-300 p-2.5 text-sm rounded-lg focus:outline-none focus:border-brand-green" />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-700 block mb-1">Table</label>
+                                            <select className="w-full border border-gray-300 p-2.5 text-sm rounded-lg bg-white focus:outline-none focus:border-brand-green">
+                                                {TABLES.map(t => <option key={t.id}>{t.id}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-gray-700 block mb-1">Notes</label>
+                                        <textarea className="w-full border border-gray-300 p-2.5 text-sm rounded-lg focus:outline-none focus:border-brand-green" rows="2" placeholder="Dietary requirements, special occasions..."></textarea>
+                                    </div>
+                                    <button onClick={() => setShowNewModal(false)} className="w-full bg-brand-green text-white font-bold py-3 rounded-lg hover:bg-green-900 transition-colors">Create Reservation</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Main Content */}
+                    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+                        
+                        {/* Header */}
+                        <header className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center flex-shrink-0 shadow-sm">
+                            <h2 className="text-xl font-bold text-gray-900">Reservations</h2>
+                            <button onClick={() => setShowNewModal(true)} className="flex items-center px-4 py-2 bg-brand-green text-white rounded-lg text-sm font-bold hover:bg-green-900 shadow-sm transition-colors">
+                                <i data-lucide="plus" className="w-4 h-4 mr-1"></i> New Reservation
+                            </button>
+                        </header>
+
+                        <div className="flex-1 overflow-y-auto p-6">
+
+                            {/* Summary Stats */}
+                            <div className="grid grid-cols-3 gap-4 mb-6">
+                                {[
+                                    { label: "Today's Bookings", value: todayCount, icon: "calendar", color: "text-brand-green" },
+                                    { label: "Confirmed", value: confirmedCount, icon: "check-circle", color: "text-green-600" },
+                                    { label: "Awaiting Confirmation", value: pendingCount, icon: "clock", color: "text-amber-600" },
+                                ].map((s, i) => (
+                                    <div key={i} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
+                                        <div className={`w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center ${s.color}`}>
+                                            <i data-lucide={s.icon} className="w-5 h-5"></i>
+                                        </div>
+                                        <div>
+                                            <div className="text-2xl font-bold text-gray-900">{s.value}</div>
+                                            <div className="text-xs text-gray-500">{s.label}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Table Layout Visualizer */}
+                            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
+                                <h3 className="font-bold text-gray-900 mb-4 text-sm">Tonight's Table Layout</h3>
+                                <div className="flex gap-4">
+                                    {TABLES.map(table => {
+                                        const todayBookings = reservations.filter(r => r.table === table.id && r.date === "1 Apr 2026" && r.status !== "Cancelled");
+                                        const isOccupied = todayBookings.length > 0;
+                                        return (
+                                            <div key={table.id} className={`flex-1 rounded-xl border-2 p-4 text-center ${isOccupied ? 'border-brand-green bg-brand-green/5' : 'border-gray-200 bg-gray-50'}`}>
+                                                <div className={`w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center text-lg ${isOccupied ? 'bg-brand-green text-white' : 'bg-gray-200 text-gray-500'}`}>
+                                                    <i data-lucide="armchair" className="w-5 h-5"></i>
+                                                </div>
+                                                <div className="font-bold text-sm text-gray-900">{table.id}</div>
+                                                <div className="text-xs text-gray-500 mt-0.5">Cap. {table.capacity}</div>
+                                                {isOccupied ? (
+                                                    <div className="mt-2 text-xs text-brand-green font-bold">{todayBookings[0].time} · {todayBookings[0].name.split(' ')[0]}</div>
+                                                ) : (
+                                                    <div className="mt-2 text-xs text-gray-400">Available</div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Filters */}
+                            <div className="flex flex-wrap gap-3 mb-4">
+                                <div className="flex items-center gap-2">
+                                    <label className="text-xs font-bold text-gray-600">Date:</label>
+                                    <div className="flex gap-1">
+                                        {dates.map(d => (
+                                            <button key={d} onClick={() => setFilterDate(d)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${filterDate === d ? 'bg-brand-green text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                                                {d}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <label className="text-xs font-bold text-gray-600">Status:</label>
+                                    <div className="flex gap-1">
+                                        {statuses.map(s => (
+                                            <button key={s} onClick={() => setFilterStatus(s)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${filterStatus === s ? 'bg-brand-terracotta text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                                                {s}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Reservations Table */}
+                            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 uppercase">
+                                        <tr>
+                                            <th className="px-5 py-3 font-medium">Guest</th>
+                                            <th className="px-5 py-3 font-medium">Date & Time</th>
+                                            <th className="px-5 py-3 font-medium">Party</th>
+                                            <th className="px-5 py-3 font-medium">Table</th>
+                                            <th className="px-5 py-3 font-medium">Status</th>
+                                            <th className="px-5 py-3 font-medium text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {filtered.map((res) => (
+                                            <tr key={res.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => { setSelectedRes(res); setShowDetail(true); }}>
+                                                <td className="px-5 py-3.5">
+                                                    <div className="font-bold text-gray-900">{res.name}</div>
+                                                    <div className="text-xs text-gray-500">{res.phone}</div>
+                                                </td>
+                                                <td className="px-5 py-3.5">
+                                                    <div className="font-medium text-gray-900">{res.date}</div>
+                                                    <div className="text-xs text-gray-500">{res.time}</div>
+                                                </td>
+                                                <td className="px-5 py-3.5 text-gray-700 font-medium">{res.party} pax</td>
+                                                <td className="px-5 py-3.5 text-gray-700">{res.table}</td>
+                                                <td className="px-5 py-3.5">
+                                                    <span className={`inline-flex px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${STATUS_COLORS[res.status] || 'bg-gray-100 text-gray-500'}`}>
+                                                        {res.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-5 py-3.5 text-right" onClick={e => e.stopPropagation()}>
+                                                    {res.status === "Pending" && (
+                                                        <button onClick={() => handleConfirm(res.id)} className="text-xs font-bold text-brand-green hover:underline mr-3">Confirm</button>
+                                                    )}
+                                                    {res.status !== "Cancelled" && (
+                                                        <button onClick={() => { setSelectedRes(res); setShowCancelConfirm(true); }} className="text-xs font-bold text-red-500 hover:underline">Cancel</button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {filtered.length === 0 && (
+                                            <tr>
+                                                <td colSpan="6" className="px-5 py-10 text-center text-gray-400 text-sm">No reservations match the selected filters.</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
