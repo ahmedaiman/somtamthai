@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useCart } from '@/lib/cartContext'
 import { DINNER_TIME_SLOTS, OPERATING_HOURS } from '@/lib/mockData'
-import { Check, ChevronRight, MapPin, Clock, CreditCard, ShoppingBag } from 'lucide-react'
+import { Check, ChevronRight, ShoppingBag } from 'lucide-react'
 
 const DELIVERY_FEE = 30
 
