@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Som Tam Thai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Task 1-0.1: Design Tokens & Theme File */
+        :root {
+            --bg-cream: #FDFBF7;
+            --primary-green: #1A4D2E;
+            --accent-terracotta: #E36414;
+            --highlight-gold: #FFB703;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+        
+        body { 
+            background-color: var(--bg-cream); 
+            font-family: 'DM Sans', sans-serif; 
+            color: #333;
+        }
+        .display-font { 
+            font-family: 'Lora', serif; 
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            cream: '#FDFBF7',
+                            green: '#1A4D2E',
+                            terracotta: '#E36414',
+                            gold: '#FFB703'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { ArrowLeft, ShieldCheck, Clock, AlertCircle } = lucide;
+
+        // Task 1-2.1: Phone Entry State Component
+        const PhoneEntryForm = ({ onSendOTP, phone, setPhone }) => {
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (phone.length === 7) {
+                    onSendOTP();
+                } else {
+                    alert("Please enter a valid 7-digit Maldivian phone number.");
+                }
+            };
+
+            return (
+                <div className="w-full">
+                    <div className="text-center mb-8">
+                        <h1 className="display-font text-3xl font-bold text-brand-green mb-2">Welcome Back</h1>
+                        <p className="text-gray-600 text-sm">Enter your mobile number to continue</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700 block">Phone Number</label>
+                            <div className="flex rounded-lg shadow-sm border border-gray-300 overflow-hidden focus-within:border-brand-green focus-within:ring-1 focus-within:ring-brand-green transition-all">
+                                <span className="inline-flex items-center px-4 bg-gray-50 text-gray-500 font-medium border-r border-gray-300 select-none">
+                                    +960
+                                </span>
+                                <input 
+                                    type="tel" 
+                                    required
+                                    maxLength="7"
+                                    placeholder="7XX XXXX"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                                    className="flex-1 block w-full px-4 py-3 focus:outline-none sm:text-lg tracking-wide"
+                                />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2 flex items-start">
+                                <i data-lucide="shield-check" className="w-4 h-4 mr-1 text-gray-400 flex-shrink-0"></i>
+                                We'll send a one-time code to verify your number.
+                            </p>
+                        </div>
+
+                        <button 
+                            type="submit" 
+                            className="w-full bg-brand-green hover:bg-green-900 text-white font-bold py-3.5 px-4 rounded-lg shadow-sm transition-colors flex justify-center items-center"
+                        >
+                            Send OTP
+                        </button>
+                    </form>
+
+                    <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+                        <p className="text-xs text-gray-400 flex items-center justify-center">
+                            <i data-lucide="alert-circle" className="w-3.5 h-3.5 mr-1"></i>
+                            Rate limited: Max 5 attempts per hour.
+                        </p>
+                    </div>
+                </div>
+            );
+        };
+
+        // Task 1-2.2: OTP Verification State Component
+        const OTPVerificationForm = ({ phone, onBack }) => {
+            const [otp, setOtp] = React.useState(['', '', '', '', '', '']);
+            const [timeLeft, setTimeLeft] = React.useState(272); // 4:32 in seconds
+            const inputRefs = React.useRef([]);
+
+            React.useEffect(() => {
+                if (timeLeft <= 0) return;
+                const timerId = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+                return () => clearInterval(timerId);
+            }, [timeLeft]);
+
+            const formatTime = (seconds) => {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${m}:${s < 10 ? '0' : ''}${s}`;
+            };
+
+            const handleChange = (index, value) => {
+                if (!/^\d*$/.test(value)) return;
+
+                const newOtp = [...otp];
+                newOtp[index] = value;
+                setOtp(newOtp);
+
+                // Auto-advance
+                if (value !== '' && index < 5) {
+                    inputRefs.current[index + 1].focus();
+                }
+            };
+
+            const handleKeyDown = (index, e) => {
+                // Backspace auto-retreat
+                if (e.key === 'Backspace' && index > 0 && otp[index] === '') {
+                    inputRefs.current[index - 1].focus();
+                }
+            };
+
+            const handleVerify = () => {
+                const code = otp.join('');
+                if (code.length !== 6) {
+                    alert("Please enter the full 6-digit code.");
+                    return;
+                }
+                if (code === '123456') {
+                    window.location.href = 'index.html';
+                } else {
+                    alert("Invalid code. Hint: use the dummy code '123456'.");
+                }
+            };
+
+            const maskedPhone = `+960-***-${phone.slice(-4)}`;
+
+            return (
+                <div className="w-full">
+                    <button 
+                        onClick={onBack}
+                        className="text-sm text-gray-500 hover:text-brand-green flex items-center mb-6 transition-colors"
+                    >
+                        <i data-lucide="arrow-left" className="w-4 h-4 mr-1"></i>
+                        Change number
+                    </button>
+
+                    <div className="text-center mb-8">
+                        <h1 className="display-font text-3xl font-bold text-brand-green mb-2">Verify Phone</h1>
+                        <p className="text-gray-600 text-sm">
+                            Code sent to <span className="font-semibold text-gray-900">{maskedPhone}</span>
+                        </p>
+                    </div>
+
+                    <div className="space-y-8">
+                        {/* Custom 6-cell OTP Input */}
+                        <div className="flex justify-center gap-2 sm:gap-3">
+                            {otp.map((digit, index) => (
+                                <input
+                                    key={index}
+                                    ref={el => inputRefs.current[index] = el}
+                                    type="text"
+                                    inputMode="numeric"
+                                    maxLength="1"
+                                    value={digit}
+                                    onChange={(e) => handleChange(index, e.target.value)}
+                                    onKeyDown={(e) => handleKeyDown(index, e)}
+                                    className="w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-bold border border-gray-300 rounded-lg shadow-sm focus:border-brand-green focus:ring-2 focus:ring-brand-green/20 focus:outline-none transition-all bg-white"
+                                />
+                            ))}
+                        </div>
+
+                        <button 
+                            onClick={handleVerify}
+                            className="w-full bg-brand-terracotta hover:bg-orange-700 text-white font-bold py-3.5 px-4 rounded-lg shadow-sm transition-colors flex justify-center items-center"
+                        >
+                            Verify &amp; Login
+                        </button>
+
+                        <div className="flex flex-col items-center justify-center space-y-3 pt-2">
+                            <div className="flex items-center text-sm font-medium text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full">
+                                <i data-lucide="clock" className="w-4 h-4 mr-1.5"></i>
+                                Code expires in {formatTime(timeLeft)}
+                            </div>
+                            
+                            <button 
+                                disabled={timeLeft > 0}
+                                onClick={() => {
+                                    setOtp(['','','','','','']);
+                                    setTimeLeft(272);
+                                    alert("New OTP sent!");
+                                }}
+                                className={`text-sm font-medium underline-offset-4 ${timeLeft > 0 ? 'text-gray-400 cursor-not-allowed' : 'text-brand-green hover:underline cursor-pointer'}`}
+                            >
+                                Resend OTP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Main Login Flow App
+        const App = () => {
+            const [step, setStep] = React.useState(1);
+            const [phone, setPhone] = React.useState('');
+
+            React.useEffect(() => {
+                lucide.createIcons();
+            });
+
+            return (
+                <div className="min-h-screen flex flex-col justify-center items-center p-4">
+                    {/* Floating Logo above the card */}
+                    <div className="mb-8 text-center">
+                        <span className="display-font font-bold text-4xl text-brand-terracotta">
+                            Som Tam Thai
+                        </span>
+                    </div>
+
+                    {/* Centered Login Card */}
+                    <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-10 relative overflow-hidden">
+                        {/* Subtle decorative background pattern element */}
+                        <div className="absolute -top-24 -right-24 w-48 h-48 bg-brand-green rounded-full opacity-5"></div>
+                        
+                        <div className="relative z-10">
+                            {step === 1 ? (
+                                <PhoneEntryForm 
+                                    phone={phone} 
+                                    setPhone={setPhone} 
+                                    onSendOTP={() => setStep(2)} 
+                                />
+                            ) : (
+                                <OTPVerificationForm 
+                                    phone={phone} 
+                                    onBack={() => setStep(1)} 
+                                />
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Simple footer for context */}
+                    <div className="mt-8 text-center text-xs text-gray-400">
+                        <p>By continuing, you agree to our Terms of Service.</p>
+                        <p className="mt-1"><a href="index.html" className="hover:text-brand-green underline">Return to Menu</a></p>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
