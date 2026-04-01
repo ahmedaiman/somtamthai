@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-cream: #FDFBF7;
+    --primary-green: #1A4D2E;
+    --accent-terracotta: #E36414;
+    --highlight-gold: #FFB703;
+  }
+
+  body {
+    background-color: #FDFBF7;
+    color: #333;
+    font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .hide-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .font-lora {
+    font-family: var(--font-lora), 'Lora', serif;
+  }
+}

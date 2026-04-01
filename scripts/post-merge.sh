@@ -1,4 +1,12 @@
 #!/bin/bash
 set -e
 
-echo "Post-merge setup complete (static site, no build step required)."
+echo "Running post-merge setup for Next.js app..."
+
+# Install npm dependencies if needed
+if [ -f "package.json" ]; then
+    echo "Installing npm dependencies..."
+    npm install
+fi
+
+echo "Post-merge setup complete."
