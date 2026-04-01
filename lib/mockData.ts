@@ -183,13 +183,35 @@ export const PRODUCTS: Product[] = [
 // ─── Cart ─────────────────────────────────────────────────────────────────────
 
 export interface CartItem {
-  id: number
+  id: string
   product: Product
   quantity: number
   spiceLevel?: string
-  addOns?: string[]
-  subtotal: number
+  addOns: string[]
 }
+
+export const MOCK_CART_ITEMS: CartItem[] = [
+  {
+    id: 'seed-1',
+    product: PRODUCTS[2],
+    quantity: 1,
+    spiceLevel: 'Hot',
+    addOns: ['Extra Prawns'],
+  },
+  {
+    id: 'seed-2',
+    product: PRODUCTS[7],
+    quantity: 2,
+    spiceLevel: 'Medium',
+    addOns: [],
+  },
+  {
+    id: 'seed-3',
+    product: PRODUCTS[10],
+    quantity: 2,
+    addOns: [],
+  },
+]
 
 // ─── Orders ───────────────────────────────────────────────────────────────────
 
