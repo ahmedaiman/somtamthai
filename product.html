@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentic Som Tam - Som Tam Thai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --bg-cream: #FDFBF7;
+            --primary-green: #1A4D2E;
+            --accent-terracotta: #E36414;
+            --highlight-gold: #FFB703;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+
+        body {
+            background-color: var(--bg-cream);
+            font-family: 'DM Sans', sans-serif;
+            color: #333;
+        }
+        .display-font {
+            font-family: 'Lora', serif;
+        }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+
+        input[type="radio"]:checked + label {
+            background-color: var(--primary-green);
+            color: white;
+            border-color: var(--primary-green);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            cream: '#FDFBF7',
+                            green: '#1A4D2E',
+                            terracotta: '#E36414',
+                            gold: '#FFB703'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { ShoppingBag, ChevronRight, Minus, Plus, ArrowLeft, Info, AlertTriangle } = lucide;
+
+        const PRODUCT = {
+            id: 1,
+            category: "Salads",
+            name: "Authentic Som Tam",
+            price: 120,
+            desc: "Green papaya salad pounded with mortar and pestle. Features fresh galangal, cherry tomatoes, snake beans, roasted peanuts, dried shrimp, and our signature tangy lime-tamarind dressing.",
+            allergenNotes: "Contains peanuts, shellfish (dried shrimp), and fish sauce. Cannot be made 100% vegetarian due to shared mortar usage.",
+            variants: {
+                name: "Spice Level",
+                options: ["Mild", "Medium", "Hot", "Thai Hot"]
+            },
+            addons: [
+                { id: "a1", name: "Extra Jasmine Rice", price: 25 },
+                { id: "a2", name: "Sticky Rice", price: 35 },
+                { id: "a3", name: "Extra Roasted Peanuts", price: 15 }
+            ]
+        };
+
+        const NavBar = ({ cartCount }) => (
+            <nav className="sticky top-0 z-50 bg-white shadow-sm px-4 py-3 flex justify-between items-center border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                    <span className="display-font font-bold text-xl text-brand-green">Som Tam Thai</span>
+                </div>
+                <div className="hidden md:flex gap-6 font-medium text-sm">
+                    <a href="index.html" className="text-brand-terracotta border-b-2 border-brand-terracotta pb-1">Menu</a>
+                    <a href="reservations.html" className="hover:text-brand-terracotta transition-colors">Reservations</a>
+                    <a href="orders.html" className="hover:text-brand-terracotta transition-colors">Orders</a>
+                    <a href="account.html" className="hover:text-brand-terracotta transition-colors">Account</a>
+                </div>
+                <div className="flex items-center gap-4">
+                    <a href="cart.html" className="relative p-2 text-gray-600 hover:text-brand-green">
+                        <i data-lucide="shopping-bag" className="w-6 h-6"></i>
+                        {cartCount > 0 && (
+                            <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-brand-terracotta rounded-full">
+                                {cartCount}
+                            </span>
+                        )}
+                    </a>
+                </div>
+            </nav>
+        );
+
+        const QuantityStepper = ({ quantity, setQuantity }) => (
+            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden w-32 h-12 bg-white">
+                <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors"
+                >
+                    <i data-lucide="minus" className="w-4 h-4"></i>
+                </button>
+                <div className="flex-1 h-full flex items-center justify-center font-bold text-lg border-x border-gray-300">
+                    {quantity}
+                </div>
+                <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="w-10 h-full flex items-center justify-center text-brand-green hover:bg-gray-100 transition-colors"
+                >
+                    <i data-lucide="plus" className="w-4 h-4"></i>
+                </button>
+            </div>
+        );
+
+        const App = () => {
+            const [quantity, setQuantity] = React.useState(1);
+            const [spiceLevel, setSpiceLevel] = React.useState("Medium");
+            const [selectedAddons, setSelectedAddons] = React.useState({});
+            const [cartCount, setCartCount] = React.useState(0);
+
+            React.useEffect(() => {
+                lucide.createIcons();
+            });
+
+            const addonsTotal = PRODUCT.addons.reduce((sum, addon) => {
+                return sum + (selectedAddons[addon.id] ? addon.price : 0);
+            }, 0);
+            const subtotal = (PRODUCT.price + addonsTotal) * quantity;
+
+            const handleAddonChange = (addonId) => {
+                setSelectedAddons(prev => ({
+                    ...prev,
+                    [addonId]: !prev[addonId]
+                }));
+            };
+
+            const handleAddToCart = () => {
+                setCartCount(prev => prev + quantity);
+                alert(`Added ${quantity}x ${PRODUCT.name} to cart!`);
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col bg-brand-cream">
+                    <NavBar cartCount={cartCount} />
+
+                    <main className="flex-grow max-w-7xl mx-auto w-full px-4 py-6 md:py-10">
+                        {/* Breadcrumb Navigation */}
+                        <nav className="flex text-sm text-gray-500 mb-6 items-center">
+                            <a href="index.html" className="hover:text-brand-green flex items-center">
+                                <i data-lucide="arrow-left" className="w-4 h-4 mr-1"></i>
+                                Back to Menu
+                            </a>
+                            <i data-lucide="chevron-right" className="w-4 h-4 mx-2"></i>
+                            <a href="index.html" className="hover:text-brand-green">{PRODUCT.category}</a>
+                            <i data-lucide="chevron-right" className="w-4 h-4 mx-2"></i>
+                            <span className="text-gray-900 font-medium">{PRODUCT.name}</span>
+                        </nav>
+
+                        {/* Two-Column Layout */}
+                        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
+
+                            {/* Left Column: Image */}
+                            <div className="w-full md:w-1/2 lg:w-3/5">
+                                <div className="aspect-square md:aspect-[4/3] bg-gray-200 rounded-2xl overflow-hidden relative shadow-sm">
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-brand-green/10 to-brand-gold/20 flex flex-col items-center justify-center">
+                                        <span className="text-8xl mb-4">🥗</span>
+                                        <span className="text-gray-500 font-medium">Product Photography Placeholder</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right Column: Details & Customization */}
+                            <div className="w-full md:w-1/2 lg:w-2/5 flex flex-col">
+                                <div className="mb-6">
+                                    <h1 className="display-font text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                                        {PRODUCT.name}
+                                    </h1>
+                                    <div className="text-2xl font-bold text-brand-green mb-4">
+                                        MVR {PRODUCT.price}
+                                    </div>
+                                    <p className="text-gray-600 leading-relaxed text-sm md:text-base">
+                                        {PRODUCT.desc}
+                                    </p>
+                                </div>
+
+                                {/* Divider */}
+                                <div className="w-full h-px bg-gray-200 my-4"></div>
+
+                                {/* Variants Selector (Radio Pills) */}
+                                <div className="mb-6">
+                                    <div className="flex justify-between items-center mb-3">
+                                        <h3 className="font-bold text-gray-900">{PRODUCT.variants.name}</h3>
+                                        <span className="text-xs text-brand-terracotta bg-orange-100 px-2 py-1 rounded">Required</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
+                                        {PRODUCT.variants.options.map(option => (
+                                            <div key={option} className="relative">
+                                                <input
+                                                    type="radio"
+                                                    id={`spice-${option}`}
+                                                    name="spice"
+                                                    value={option}
+                                                    checked={spiceLevel === option}
+                                                    onChange={(e) => setSpiceLevel(e.target.value)}
+                                                    className="sr-only"
+                                                />
+                                                <label
+                                                    htmlFor={`spice-${option}`}
+                                                    className="block text-center px-4 py-2 border border-gray-300 rounded-full cursor-pointer text-sm font-medium text-gray-700 hover:border-brand-green transition-colors"
+                                                >
+                                                    {option}
+                                                </label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Add-ons Selector (Checkboxes) */}
+                                <div className="mb-8">
+                                    <h3 className="font-bold text-gray-900 mb-3">Add-ons <span className="text-gray-400 font-normal text-sm ml-1">(Optional)</span></h3>
+                                    <div className="space-y-3">
+                                        {PRODUCT.addons.map(addon => (
+                                            <label key={addon.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                                <div className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="w-5 h-5 text-brand-green rounded border-gray-300 focus:ring-brand-green"
+                                                        checked={!!selectedAddons[addon.id]}
+                                                        onChange={() => handleAddonChange(addon.id)}
+                                                    />
+                                                    <span className="ml-3 text-gray-700 font-medium text-sm">{addon.name}</span>
+                                                </div>
+                                                <span className="text-gray-500 text-sm">+MVR {addon.price}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Allergen Note Section */}
+                                <div className="mb-8 bg-orange-50 rounded-lg p-4 flex items-start border border-orange-100">
+                                    <i data-lucide="alert-triangle" className="w-5 h-5 text-brand-terracotta mr-3 flex-shrink-0 mt-0.5"></i>
+                                    <div>
+                                        <h4 className="text-sm font-bold text-brand-terracotta mb-1">Dietary & Allergen Notes</h4>
+                                        <p className="text-xs text-orange-800 leading-relaxed">{PRODUCT.allergenNotes}</p>
+                                    </div>
+                                </div>
+
+                                {/* Sticky Bottom Actions (Mobile) / Regular flow (Desktop) */}
+                                <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 md:static md:p-0 md:bg-transparent md:border-0 z-40 mt-auto">
+                                    <div className="flex gap-4 max-w-7xl mx-auto">
+                                        <QuantityStepper quantity={quantity} setQuantity={setQuantity} />
+
+                                        <button
+                                            onClick={handleAddToCart}
+                                            className="flex-1 bg-brand-green text-white rounded-lg font-bold flex items-center justify-between px-6 hover:bg-green-900 transition-colors shadow-sm"
+                                        >
+                                            <span>Add to Cart</span>
+                                            <span>MVR {subtotal}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                {/* Spacer for mobile sticky footer */}
+                                <div className="h-20 md:hidden"></div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
