@@ -1,0 +1,6 @@
+/tmp/
+/tmp/gh_token.txt
+node_modules/
+.config/
+*.log
+.local/
