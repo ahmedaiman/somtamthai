@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Som Tam Thai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Task 1-0.1: Design Tokens & Theme File */
+        :root {
+            --bg-cream: #FDFBF7;
+            --primary-green: #1A4D2E;
+            --accent-terracotta: #E36414;
+            --highlight-gold: #FFB703;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+        
+        body { 
+            background-color: var(--bg-cream); 
+            font-family: 'DM Sans', sans-serif; 
+            color: #333;
+        }
+        .display-font { 
+            font-family: 'Lora', serif; 
+        }
+        
+        /* Custom Radio styling */
+        input[type="radio"]:checked + div {
+            border-color: var(--primary-green);
+            background-color: #f0fdf4;
+        }
+        input[type="radio"]:checked + div .radio-indicator {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            cream: '#FDFBF7',
+                            green: '#1A4D2E',
+                            terracotta: '#E36414',
+                            gold: '#FFB703'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { ArrowLeft, Check, MapPin, Clock, CreditCard, ChevronRight, CheckCircle2, Copy } = lucide;
+
+        // Dummy Data
+        const CART_ITEMS = [
+            { id: 1, name: 'Authentic Som Tam', qty: 2, price: 135 },
+            { id: 2, name: 'Pad Thai', qty: 1, price: 160 }
+        ];
+        const USER_PROFILE = { name: "Ahmed", phone: "+960 789 2616" };
+        const OPERATING_HOURS = { isOpen: true };
+
+        // Simplified NavBar for Checkout
+        const NavBar = () => (
+            <nav className="sticky top-0 z-50 bg-white shadow-sm px-4 py-3 flex justify-center items-center border-b border-gray-100">
+                <a href="cart.html" className="absolute left-4 text-gray-500 hover:text-brand-green flex items-center text-sm font-medium transition-colors">
+                    <i data-lucide="arrow-left" className="w-4 h-4 mr-1"></i> Back to Cart
+                </a>
+                <div className="flex items-center gap-2">
+                    <span className="display-font font-bold text-xl text-brand-green">Som Tam Thai</span>
+                </div>
+            </nav>
+        );
+
+        // Task 1-3.3: Checkout Step Indicator
+        const CheckoutStepper = ({ currentStep }) => {
+            const steps = [
+                { num: 1, label: 'Delivery', icon: 'map-pin' },
+                { num: 2, label: 'Schedule', icon: 'clock' },
+                { num: 3, label: 'Payment', icon: 'credit-card' }
+            ];
+
+            return (
+                <div className="mb-8">
+                    <div className="flex items-center justify-between relative z-10">
+                        {steps.map((step, idx) => {
+                            const isCompleted = currentStep > step.num;
+                            const isActive = currentStep === step.num;
+                            
+                            return (
+                                <React.Fragment key={step.num}>
+                                    <div className="flex flex-col items-center relative bg-brand-cream px-2">
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm mb-2 transition-colors z-10
+                                            ${isActive ? 'bg-brand-green text-white border-2 border-brand-green' : 
+                                              isCompleted ? 'bg-brand-green text-white border-2 border-brand-green' : 
+                                              'bg-white text-gray-400 border-2 border-gray-300'}`}
+                                        >
+                                            {isCompleted ? <i data-lucide="check" className="w-5 h-5"></i> : step.num}
+                                        </div>
+                                        <span className={`text-xs font-bold uppercase tracking-wider ${isActive || isCompleted ? 'text-gray-900' : 'text-gray-400'}`}>
+                                            {step.label}
+                                        </span>
+                                    </div>
+                                    {idx < steps.length - 1 && (
+                                        <div className={`flex-1 h-[2px] -mt-6 z-0 ${currentStep > step.num ? 'bg-brand-green' : 'bg-gray-200'}`}></div>
+                                    )}
+                                </React.Fragment>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+        // Task 1-3.4: Step 1 — Delivery Details
+        const Step1Delivery = ({ onNext, data, setData }) => (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i data-lucide="map-pin" className="w-5 h-5 mr-2 text-brand-terracotta"></i> Delivery Details
+                </h2>
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input type="text" value={data.name} onChange={e => setData({...data, name: e.target.value})} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-brand-green focus:ring-1 focus:ring-brand-green focus:outline-none" />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
+                        <textarea placeholder="e.g., G. Fihaatige, 3rd Floor" value={data.address} onChange={e => setData({...data, address: e.target.value})} rows="2" className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-brand-green focus:ring-1 focus:ring-brand-green focus:outline-none"></textarea>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Island / Ward</label>
+                        <select value={data.ward} onChange={e => setData({...data, ward: e.target.value})} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-brand-green focus:ring-1 focus:ring-brand-green focus:outline-none bg-white">
+                            <option value="Maafannu">Maafannu</option>
+                            <option value="Galolhu">Galolhu</option>
+                            <option value="Henveiru">Henveiru</option>
+                            <option value="Machangolhi">Machangolhi</option>
+                            <option value="Hulhumale Phase 1">Hulhumalé Phase 1</option>
+                            <option value="Hulhumale Phase 2">Hulhumalé Phase 2</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Special Delivery Instructions (Optional)</label>
+                        <input type="text" placeholder="e.g., Call upon arrival, leave at reception" value={data.instructions} onChange={e => setData({...data, instructions: e.target.value})} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-brand-green focus:ring-1 focus:ring-brand-green focus:outline-none" />
+                    </div>
+                </div>
+                <button onClick={onNext} className="w-full mt-6 bg-brand-green hover:bg-green-900 text-white font-bold py-3.5 px-4 rounded-lg shadow-sm transition-colors flex justify-center items-center">
+                    Continue to Schedule <i data-lucide="chevron-right" className="w-4 h-4 ml-1"></i>
+                </button>
+            </div>
+        );
+
+        // Task 1-3.5: Step 2 — Schedule
+        const Step2Schedule = ({ onNext, onBack, data, setData }) => (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i data-lucide="clock" className="w-5 h-5 mr-2 text-brand-terracotta"></i> Delivery Time
+                </h2>
+                
+                {!OPERATING_HOURS.isOpen && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-start">
+                        <i data-lucide="info" className="w-5 h-5 text-amber-500 mr-3 mt-0.5 flex-shrink-0"></i>
+                        <div>
+                            <h3 className="text-amber-800 font-bold text-sm">Restaurant is currently closed</h3>
+                            <p className="text-amber-700 text-sm mt-1">You are placing a preorder. Your order will be prepared for your selected time below.</p>
+                        </div>
+                    </div>
+                )}
+
+                <div className="space-y-3">
+                    {OPERATING_HOURS.isOpen && (
+                        <label className="block relative cursor-pointer">
+                            <input type="radio" name="scheduleType" className="sr-only" checked={data.type === 'asap'} onChange={() => setData({...data, type: 'asap'})} />
+                            <div className="border border-gray-200 rounded-lg p-4 flex items-center transition-colors">
+                                <div className="w-5 h-5 rounded-full border-2 border-gray-300 mr-4 flex items-center justify-center radio-indicator transition-colors">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+                                </div>
+                                <div>
+                                    <div className="font-bold text-gray-900">Deliver as soon as possible</div>
+                                    <div className="text-sm text-gray-500 mt-0.5">Estimated time: 30-45 minutes</div>
+                                </div>
+                            </div>
+                        </label>
+                    )}
+
+                    <label className="block relative cursor-pointer">
+                        <input type="radio" name="scheduleType" className="sr-only" checked={data.type === 'schedule'} onChange={() => setData({...data, type: 'schedule'})} />
+                        <div className="border border-gray-200 rounded-lg p-4 transition-colors">
+                            <div className="flex items-center mb-4">
+                                <div className="w-5 h-5 rounded-full border-2 border-gray-300 mr-4 flex items-center justify-center radio-indicator transition-colors">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+                                </div>
+                                <div className="font-bold text-gray-900">Schedule for later</div>
+                            </div>
+                            
+                            {data.type === 'schedule' && (
+                                <div className="ml-9 border-t border-gray-100 pt-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Date &amp; Time</label>
+                                    <input type="date" className="w-full border border-gray-300 rounded-lg p-3 text-sm mb-4 focus:border-brand-green focus:outline-none" defaultValue="2026-04-02" />
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {['18:00', '18:30', '19:00', '19:30', '20:00', '20:30'].map(slot => (
+                                            <button 
+                                                key={slot} 
+                                                onClick={(e) => { e.preventDefault(); setData({...data, time: slot}); }}
+                                                className={`py-2 text-sm rounded-lg border font-medium transition-colors ${data.time === slot ? 'bg-brand-green text-white border-brand-green' : 'bg-white border-gray-300 text-gray-700 hover:border-brand-green'}`}
+                                            >
+                                                {slot}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </label>
+                </div>
+
+                <div className="flex gap-3 mt-8">
+                    <button onClick={onBack} className="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 px-4 rounded-lg shadow-sm transition-colors text-sm">
+                        Back
+                    </button>
+                    <button onClick={onNext} className="w-2/3 bg-brand-green hover:bg-green-900 text-white font-bold py-3.5 px-4 rounded-lg shadow-sm transition-colors flex justify-center items-center">
+                        Continue to Payment <i data-lucide="chevron-right" className="w-4 h-4 ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        );
+
+        // Task 1-3.6: Step 3 — Payment
+        const Step3Payment = ({ onBack, onSubmit, data, setData }) => (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <i data-lucide="credit-card" className="w-5 h-5 mr-2 text-brand-terracotta"></i> Payment Method
+                </h2>
+                
+                <div className="space-y-3">
+                    <label className="block relative cursor-pointer">
+                        <input type="radio" name="paymentMethod" className="sr-only" checked={data.method === 'cod'} onChange={() => setData({...data, method: 'cod'})} />
+                        <div className="border border-gray-200 rounded-lg p-4 flex items-center transition-colors">
+                            <div className="w-5 h-5 rounded-full border-2 border-gray-300 mr-4 flex items-center justify-center radio-indicator transition-colors">
+                                <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+                            </div>
+                            <div className="font-bold text-gray-900 flex-1">Cash on Delivery</div>
+                            <span className="text-xl">💵</span>
+                        </div>
+                    </label>
+
+                    <label className="block relative cursor-pointer">
+                        <input type="radio" name="paymentMethod" className="sr-only" checked={data.method === 'transfer'} onChange={() => setData({...data, method: 'transfer'})} />
+                        <div className="border border-gray-200 rounded-lg p-4 transition-colors">
+                            <div className="flex items-center mb-2">
+                                <div className="w-5 h-5 rounded-full border-2 border-gray-300 mr-4 flex items-center justify-center radio-indicator transition-colors">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+                                </div>
+                                <div className="font-bold text-gray-900 flex-1">Bank Transfer (BML)</div>
+                                <span className="text-xl">🏦</span>
+                            </div>
+                            {data.method === 'transfer' && (
+                                <div className="ml-9 p-3 bg-gray-50 border border-gray-200 rounded-md mt-2 text-sm">
+                                    <p className="text-gray-500 mb-1">Transfer to the following account and share the receipt on delivery:</p>
+                                    <div className="font-mono font-bold text-gray-900 flex items-center justify-between">
+                                        7730 0000 0000 000
+                                        <button onClick={(e) => e.preventDefault()} className="text-brand-green hover:text-green-800"><i data-lucide="copy" className="w-4 h-4"></i></button>
+                                    </div>
+                                    <div className="text-gray-900 font-medium">Som Tam Thai Pvt Ltd</div>
+                                </div>
+                            )}
+                        </div>
+                    </label>
+
+                    <label className="block relative cursor-pointer">
+                        <input type="radio" name="paymentMethod" className="sr-only" checked={data.method === 'online'} onChange={() => setData({...data, method: 'online'})} />
+                        <div className="border border-gray-200 rounded-lg p-4 transition-colors">
+                            <div className="flex items-center">
+                                <div className="w-5 h-5 rounded-full border-2 border-gray-300 mr-4 flex items-center justify-center radio-indicator transition-colors">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-white"></div>
+                                </div>
+                                <div className="font-bold text-gray-900 flex-1">Online Payment (BML Gateway)</div>
+                                <span className="text-xl">💳</span>
+                            </div>
+                            {data.method === 'online' && (
+                                <div className="ml-9 mt-3 text-sm text-gray-500 italic">
+                                    You will be redirected to the secure BML payment portal after clicking Place Order.
+                                </div>
+                            )}
+                        </div>
+                    </label>
+                </div>
+
+                <div className="flex gap-3 mt-8">
+                    <button onClick={onBack} className="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3.5 px-4 rounded-lg shadow-sm transition-colors text-sm">
+                        Back
+                    </button>
+                    <button onClick={onSubmit} className="w-2/3 bg-brand-green hover:bg-green-900 text-white font-bold py-3.5 px-4 rounded-lg shadow-sm transition-colors flex justify-center items-center">
+                        Place Order <i data-lucide="check" className="w-4 h-4 ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        );
+
+        // Task 1-3.6: Order Confirmation
+        const OrderConfirmation = () => (
+            <div className="max-w-xl mx-auto text-center py-10">
+                <div className="w-24 h-24 bg-green-100 text-brand-green rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="check-circle-2" className="w-12 h-12"></i>
+                </div>
+                <h1 className="display-font text-4xl font-bold text-brand-green mb-3">Order Confirmed!</h1>
+                <p className="text-gray-600 mb-8">Thank you for your order. We've received it and will start preparing it soon.</p>
+                
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8 text-left">
+                    <div className="flex justify-between items-center border-b border-gray-100 pb-4 mb-4">
+                        <span className="text-gray-500">Order ID</span>
+                        <span className="font-bold text-gray-900">#STT-20260401-0042</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-gray-100 pb-4 mb-4">
+                        <span className="text-gray-500">Total Amount</span>
+                        <span className="font-bold text-brand-green">MVR 496.80</span>
+                    </div>
+                    <div className="flex items-start">
+                        <div className="bg-brand-cream rounded p-2 mr-3 text-brand-terracotta mt-1"><i data-lucide="check" className="w-4 h-4"></i></div>
+                        <div>
+                            <p className="font-medium text-gray-900 text-sm">SMS Confirmation Sent</p>
+                            <p className="text-xs text-gray-500">We've sent the details to +960 789 2616</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-3">
+                    <a href="orders.html" className="w-full inline-block bg-brand-terracotta hover:bg-orange-700 text-white font-bold py-3.5 px-4 rounded-lg shadow-sm transition-colors">
+                        Track Order Status
+                    </a>
+                    <a href="index.html" className="w-full inline-block bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-3.5 px-4 rounded-lg shadow-sm transition-colors">
+                        Return to Menu
+                    </a>
+                </div>
+            </div>
+        );
+
+        // Main App Component
+        const App = () => {
+            const [step, setStep] = React.useState(1);
+            const [isConfirmed, setIsConfirmed] = React.useState(false);
+            
+            const [deliveryData, setDeliveryData] = React.useState({ name: USER_PROFILE.name, address: '', ward: 'Maafannu', instructions: '' });
+            const [scheduleData, setScheduleData] = React.useState({ type: OPERATING_HOURS.isOpen ? 'asap' : 'schedule', time: '18:00' });
+            const [paymentData, setPaymentData] = React.useState({ method: 'cod' });
+
+            React.useEffect(() => {
+                lucide.createIcons();
+            });
+
+            const subtotal = CART_ITEMS.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const deliveryFee = 35;
+            const gst = subtotal * 0.08;
+            const grandTotal = subtotal + deliveryFee + gst;
+
+            const handleSubmitOrder = () => {
+                setIsConfirmed(true);
+                window.scrollTo(0, 0);
+            };
+
+            if (isConfirmed) {
+                return (
+                    <div className="min-h-screen bg-brand-cream">
+                        <NavBar />
+                        <main className="px-4"><OrderConfirmation /></main>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen flex flex-col bg-brand-cream pb-12">
+                    <NavBar />
+
+                    <main className="flex-grow max-w-5xl mx-auto w-full px-4 py-8">
+                        <CheckoutStepper currentStep={step} />
+
+                        <div className="flex flex-col lg:flex-row gap-8">
+                            
+                            {/* Left Column: Form Steps */}
+                            <div className="flex-1">
+                                {step === 1 && <Step1Delivery onNext={() => setStep(2)} data={deliveryData} setData={setDeliveryData} />}
+                                {step === 2 && <Step2Schedule onNext={() => setStep(3)} onBack={() => setStep(1)} data={scheduleData} setData={setScheduleData} />}
+                                {step === 3 && <Step3Payment onBack={() => setStep(2)} onSubmit={handleSubmitOrder} data={paymentData} setData={setPaymentData} />}
+                            </div>
+
+                            {/* Right Column: Mini Order Summary */}
+                            <div className="w-full lg:w-80">
+                                <div className="bg-gray-50 rounded-xl border border-gray-200 p-5 lg:sticky lg:top-24">
+                                    <h3 className="font-bold text-gray-900 mb-4 pb-3 border-b border-gray-200">Order Summary</h3>
+                                    
+                                    <div className="space-y-3 text-sm mb-4 border-b border-gray-200 pb-4">
+                                        {CART_ITEMS.map(item => (
+                                            <div key={item.id} className="flex justify-between">
+                                                <span className="text-gray-600 line-clamp-1 pr-2">{item.qty}x {item.name}</span>
+                                                <span className="font-medium">MVR {item.price * item.qty}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="space-y-2 text-sm text-gray-600 mb-4">
+                                        <div className="flex justify-between"><span>Subtotal</span><span>MVR {subtotal.toFixed(2)}</span></div>
+                                        <div className="flex justify-between"><span>Delivery</span><span>MVR {deliveryFee.toFixed(2)}</span></div>
+                                        <div className="flex justify-between"><span>GST (8%)</span><span>MVR {gst.toFixed(2)}</span></div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center pt-3 border-t border-gray-200">
+                                        <span className="font-bold text-gray-900">Total</span>
+                                        <span className="font-bold text-xl text-brand-green">MVR {grandTotal.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
