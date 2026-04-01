@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customers - Admin - Som Tam Thai</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+        body { background-color: #f3f4f6; font-family: 'DM Sans', sans-serif; color: #333; }
+        .display-font { font-family: 'Lora', serif; }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { cream: '#FDFBF7', green: '#1A4D2E', terracotta: '#E36414', gold: '#FFB703' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="antialiased h-screen flex overflow-hidden">
+    <div id="root" class="w-full h-full flex"></div>
+    <script type="text/babel">
+        const CUSTOMERS = [
+            { id: 'C001', name: 'Ahmed Rasheed', phone: '+960 789 2616', orders: 12, spent: 1840.50, lastOrder: '1 Apr 2026', tags: ['Regular', 'VIP'] },
+            { id: 'C002', name: 'Aishath Shiyam', phone: '+960 777 1122', orders: 7, spent: 945.00, lastOrder: '30 Mar 2026', tags: ['Regular'] },
+            { id: 'C003', name: 'Hassan Ali', phone: '+960 788 3344', orders: 3, spent: 410.00, lastOrder: '28 Mar 2026', tags: [] },
+            { id: 'C004', name: 'Mariyam Latheef', phone: '+960 799 5566', orders: 18, spent: 3120.80, lastOrder: '1 Apr 2026', tags: ['VIP', 'Regular'] },
+            { id: 'C005', name: 'Ibrahim Waheed', phone: '+960 791 2345', orders: 5, spent: 680.00, lastOrder: '25 Mar 2026', tags: ['Regular'] },
+            { id: 'C006', name: 'Fatima Rashid', phone: '+960 722 4455', orders: 1, spent: 220.00, lastOrder: '20 Mar 2026', tags: ['New'] },
+            { id: 'C007', name: 'Zara Ahmed', phone: '+960 792 3456', orders: 9, spent: 1350.00, lastOrder: '29 Mar 2026', tags: ['Regular'] },
+            { id: 'C008', name: 'Ali Hassan', phone: '+960 711 2233', orders: 2, spent: 315.00, lastOrder: '15 Mar 2026', tags: ['New'] },
+        ];
+
+        const TAG_COLORS = {
+            VIP: 'bg-brand-gold/20 text-yellow-800 border border-brand-gold/40',
+            Regular: 'bg-blue-50 text-blue-700 border border-blue-100',
+            New: 'bg-green-50 text-green-700 border border-green-100',
+        };
+
+        const AdminSidebar = ({ currentRoute }) => (
+            <aside className="bg-brand-green text-white w-64 flex-shrink-0 hidden md:flex flex-col h-full z-20">
+                <div className="p-6 border-b border-white/10 flex items-center gap-3">
+                    <div className="w-8 h-8 bg-brand-gold rounded-md flex items-center justify-center text-brand-green font-bold text-xl">S</div>
+                    <div>
+                        <h1 className="display-font font-bold text-lg leading-tight">Som Tam Thai</h1>
+                        <span className="text-[10px] uppercase tracking-widest text-brand-gold font-bold">Admin Panel</span>
+                    </div>
+                </div>
+                <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+                    {[
+                        { id: 'dashboard', icon: 'layout-dashboard', label: 'Dashboard', link: 'dashboard.html' },
+                        { id: 'orders', icon: 'shopping-bag', label: 'Orders', link: 'orders.html' },
+                        { id: 'reservations', icon: 'calendar', label: 'Reservations', link: 'reservations.html' },
+                        { id: 'menu', icon: 'menu', label: 'Menu', link: 'menu.html' },
+                        { id: 'schedule', icon: 'clock', label: 'Schedule', link: 'schedule.html' },
+                        { id: 'customers', icon: 'users', label: 'Customers', link: 'customers.html' },
+                        { id: 'settings', icon: 'settings', label: 'Settings', link: 'settings.html' }
+                    ].map(item => (
+                        <a key={item.id} href={item.link} className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${currentRoute === item.id ? 'bg-white/10 text-brand-gold font-bold' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}>
+                            <div className="flex items-center">
+                                <i data-lucide={item.icon} className={`w-5 h-5 mr-3 ${currentRoute === item.id ? 'text-brand-gold' : 'text-gray-400'}`}></i>
+                                {item.label}
+                            </div>
+                        </a>
+                    ))}
+                </nav>
+                <div className="p-4 border-t border-white/10">
+                    <div className="flex items-center gap-3 mb-4 px-2">
+                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                            <i data-lucide="user" className="w-4 h-4 text-white"></i>
+                        </div>
+                        <div>
+                            <div className="text-sm font-bold">Admin User</div>
+                            <div className="text-xs text-gray-400">Restaurant Admin</div>
+                        </div>
+                    </div>
+                    <button className="w-full flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 py-2 rounded transition-colors">
+                        <i data-lucide="log-out" className="w-4 h-4"></i> Sign Out
+                    </button>
+                </div>
+            </aside>
+        );
+
+        const App = () => {
+            const [search, setSearch] = React.useState('');
+            const [filterTag, setFilterTag] = React.useState('All');
+            const [selectedCustomer, setSelectedCustomer] = React.useState(null);
+
+            React.useEffect(() => { lucide.createIcons(); });
+
+            const filtered = CUSTOMERS.filter(c => {
+                const matchSearch = c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search);
+                const matchTag = filterTag === 'All' || c.tags.includes(filterTag);
+                return matchSearch && matchTag;
+            });
+
+            const totalRevenue = CUSTOMERS.reduce((s, c) => s + c.spent, 0);
+            const vipCount = CUSTOMERS.filter(c => c.tags.includes('VIP')).length;
+            const newCount = CUSTOMERS.filter(c => c.tags.includes('New')).length;
+
+            return (
+                <div className="flex w-full h-full">
+                    <AdminSidebar currentRoute="customers" />
+
+                    {/* Customer Detail Drawer */}
+                    {selectedCustomer && (
+                        <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
+                            <div className="bg-white w-full max-w-md h-full shadow-xl flex flex-col overflow-y-auto">
+                                <div className="bg-brand-green text-white p-6 flex justify-between items-start flex-shrink-0">
+                                    <div>
+                                        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold mb-3">
+                                            {selectedCustomer.name[0]}
+                                        </div>
+                                        <h3 className="text-xl font-bold">{selectedCustomer.name}</h3>
+                                        <p className="text-sm text-white/70 mt-0.5">{selectedCustomer.phone}</p>
+                                    </div>
+                                    <button onClick={() => setSelectedCustomer(null)} className="text-white/70 hover:text-white p-1">
+                                        <i data-lucide="x" className="w-5 h-5"></i>
+                                    </button>
+                                </div>
+
+                                <div className="p-6 space-y-5 flex-1">
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div className="bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
+                                            <div className="text-xl font-bold text-gray-900">{selectedCustomer.orders}</div>
+                                            <div className="text-xs text-gray-500 mt-0.5">Orders</div>
+                                        </div>
+                                        <div className="bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
+                                            <div className="text-xl font-bold text-brand-green">{selectedCustomer.spent.toFixed(0)}</div>
+                                            <div className="text-xs text-gray-500 mt-0.5">MVR Spent</div>
+                                        </div>
+                                        <div className="bg-gray-50 rounded-xl p-3 text-center border border-gray-100">
+                                            <div className="text-xl font-bold text-gray-900">{(selectedCustomer.spent / selectedCustomer.orders).toFixed(0)}</div>
+                                            <div className="text-xs text-gray-500 mt-0.5">Avg Order</div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tags</div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['VIP', 'Regular', 'New'].map(tag => (
+                                                <button key={tag} className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-colors ${selectedCustomer.tags.includes(tag) ? TAG_COLORS[tag] : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100'}`}>
+                                                    {tag}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Recent Activity</div>
+                                        <div className="space-y-3">
+                                            {[
+                                                { label: 'Last Order', value: selectedCustomer.lastOrder },
+                                                { label: 'Customer Since', value: 'Jan 2026' },
+                                                { label: 'Avg. Spend / Visit', value: `MVR ${(selectedCustomer.spent / selectedCustomer.orders).toFixed(2)}` },
+                                            ].map((item, i) => (
+                                                <div key={i} className="flex justify-between text-sm">
+                                                    <span className="text-gray-500">{item.label}</span>
+                                                    <span className="font-bold text-gray-900">{item.value}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Internal Note</div>
+                                        <textarea className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-brand-green resize-none" rows="3" placeholder="Add a note about this customer..."></textarea>
+                                    </div>
+                                </div>
+
+                                <div className="p-6 border-t border-gray-100 flex gap-3 flex-shrink-0">
+                                    <a href="../orders.html" className="flex-1 border border-gray-200 text-gray-700 font-bold py-2.5 rounded-lg hover:bg-gray-50 transition-colors text-sm text-center">View Orders</a>
+                                    <button className="flex-1 bg-brand-green text-white font-bold py-2.5 rounded-lg hover:bg-green-900 transition-colors text-sm">Save Note</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+                        <header className="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center flex-shrink-0 shadow-sm">
+                            <h2 className="text-xl font-bold text-gray-900">Customers</h2>
+                            <button className="flex items-center px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 shadow-sm transition-colors">
+                                <i data-lucide="download" className="w-4 h-4 mr-2"></i> Export CSV
+                            </button>
+                        </header>
+
+                        <div className="flex-1 overflow-y-auto p-6">
+
+                            {/* KPI Row */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                {[
+                                    { label: 'Total Customers', value: CUSTOMERS.length, icon: 'users', color: 'text-brand-green bg-brand-green/10' },
+                                    { label: 'VIP Members', value: vipCount, icon: 'star', color: 'text-yellow-700 bg-yellow-50' },
+                                    { label: 'New This Month', value: newCount, icon: 'user-plus', color: 'text-blue-600 bg-blue-50' },
+                                    { label: 'Total Revenue', value: `MVR ${totalRevenue.toLocaleString('en', {minimumFractionDigits: 0})}`, icon: 'trending-up', color: 'text-brand-terracotta bg-brand-terracotta/10' },
+                                ].map((s, i) => (
+                                    <div key={i} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${s.color}`}>
+                                            <i data-lucide={s.icon} className="w-5 h-5"></i>
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-gray-900 text-lg leading-tight">{s.value}</div>
+                                            <div className="text-xs text-gray-500">{s.label}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Search & Filters */}
+                            <div className="flex flex-wrap gap-3 mb-5">
+                                <div className="relative flex-1 min-w-[200px]">
+                                    <i data-lucide="search" className="w-4 h-4 text-gray-400 absolute left-3 top-2.5"></i>
+                                    <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name or phone..." className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand-green bg-white" />
+                                </div>
+                                <div className="flex gap-1">
+                                    {['All', 'VIP', 'Regular', 'New'].map(tag => (
+                                        <button key={tag} onClick={() => setFilterTag(tag)} className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors ${filterTag === tag ? 'bg-brand-green text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                                            {tag}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Customers Table */}
+                            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-gray-50 border-b border-gray-100 text-xs text-gray-500 uppercase">
+                                        <tr>
+                                            <th className="px-5 py-3 font-medium">Customer</th>
+                                            <th className="px-5 py-3 font-medium text-center">Orders</th>
+                                            <th className="px-5 py-3 font-medium text-right">Total Spent</th>
+                                            <th className="px-5 py-3 font-medium">Last Order</th>
+                                            <th className="px-5 py-3 font-medium">Tags</th>
+                                            <th className="px-5 py-3 font-medium text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {filtered.map(c => (
+                                            <tr key={c.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setSelectedCustomer(c)}>
+                                                <td className="px-5 py-3.5">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center font-bold text-sm flex-shrink-0">
+                                                            {c.name[0]}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-bold text-gray-900">{c.name}</div>
+                                                            <div className="text-xs text-gray-500">{c.phone}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-5 py-3.5 text-center font-bold text-gray-700">{c.orders}</td>
+                                                <td className="px-5 py-3.5 text-right font-bold text-brand-green">MVR {c.spent.toFixed(2)}</td>
+                                                <td className="px-5 py-3.5 text-gray-600">{c.lastOrder}</td>
+                                                <td className="px-5 py-3.5">
+                                                    <div className="flex gap-1 flex-wrap">
+                                                        {c.tags.map(tag => (
+                                                            <span key={tag} className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${TAG_COLORS[tag]}`}>{tag}</span>
+                                                        ))}
+                                                        {c.tags.length === 0 && <span className="text-gray-400 text-xs">—</span>}
+                                                    </div>
+                                                </td>
+                                                <td className="px-5 py-3.5 text-right" onClick={e => e.stopPropagation()}>
+                                                    <button onClick={() => setSelectedCustomer(c)} className="text-xs font-bold text-brand-green border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors">
+                                                        View
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {filtered.length === 0 && (
+                                            <tr><td colSpan="6" className="px-5 py-10 text-center text-gray-400 text-sm">No customers match your search.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

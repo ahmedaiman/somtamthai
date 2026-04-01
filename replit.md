@@ -53,6 +53,9 @@ A static multi-page wiremock/prototype for a Thai restaurant based in Maafannu, 
 | `orders.html` | Order Management | Full-screen Kanban board (5 stages), advance/cancel actions per card, manual order creation modal, completed orders table |
 | `reservations.html` | Reservations | Summary stats, table layout visualizer, date/status filters, full table with confirm/cancel inline actions, detail side drawer |
 | `menu.html` | Menu Management | Category tabs, item cards with availability toggle, inline edit/delete, add-new item drawer with spice level picker |
+| `schedule.html` | Schedule & Hours | Per-day lunch/dinner toggles with time pickers, staff roster grid showing weekly shifts per employee |
+| `customers.html` | Customers | KPI row, live search + tag filter, customer table with VIP/Regular/New badges, side drawer with spend stats and note field |
+| `settings.html` | Settings | Sectioned panel (Restaurant Info, Ordering, Notifications, Danger Zone) with toggles, inputs, and save confirmation |
 
 ## Infrastructure
 
