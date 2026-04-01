@@ -9,7 +9,30 @@ A static multi-page wiremock/prototype for a Thai restaurant based in Maafannu, 
 - **Currency:** MVR (Maldivian Rufiyaa)
 - **Icons:** Lucide via CDN (`lucide.createIcons()` called in `React.useEffect`)
 
-## Pages
+## File Structure
+
+```
+/                          ← Customer-facing pages
+  index.html               ← Home / Menu
+  product.html             ← Product detail
+  login.html               ← Phone + OTP login (dummy code: 123456)
+  cart.html                ← Shopping cart
+  checkout.html            ← 3-step checkout flow
+  reservations.html        ← Book a table
+  orders.html              ← Order status tracker
+  account.html             ← Account dashboard
+
+/admin/                    ← Admin panel pages
+  dashboard.html           ← KPI overview, live queue, reservations summary
+  orders.html              ← (planned) Kanban order management
+  reservations.html        ← (planned) Reservation management
+  menu.html                ← (planned) Menu item editor
+  schedule.html            ← (planned) Hours & shift management
+  customers.html           ← (planned) Customer list
+  settings.html            ← (planned) Restaurant settings
+```
+
+## Customer Pages
 
 | File | Title | Description |
 |---|---|---|
@@ -22,9 +45,15 @@ A static multi-page wiremock/prototype for a Thai restaurant based in Maafannu, 
 | `orders.html` | Your Orders | Live order status tracker (6 steps), expandable order history rows |
 | `account.html` | Account Dashboard | Profile editor, quick-action cards, upcoming reservation card, recent orders |
 
+## Admin Pages (`/admin/`)
+
+| File | Title | Description |
+|---|---|---|
+| `dashboard.html` | Admin Dashboard | 4 KPI cards, live Kanban queue widget, revenue bar chart, today's reservations table, top-selling items |
+
 ## Infrastructure
 
-- **Server:** `static-web-server` on port 80 (configured in `.replit`)
-- **Workflow:** `Serve static` — run button starts the static server
+- **Server:** `static-web-server` on port 80
+- **Workflow:** `Serve static` — starts the static server
 - **Post-merge script:** `scripts/post-merge.sh` — no-op (static site, no build)
-- **Deployment:** Static deployment, `publicDir = "/"`
+- **Admin sidebar:** Shared `AdminSidebar` component defined inline in each admin page; links use relative paths within `/admin/`
