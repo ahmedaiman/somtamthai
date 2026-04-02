@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { ShoppingBag } from 'lucide-react'
 import { OPERATING_HOURS } from '@/lib/mockData'
 import { useCart } from '@/lib/cartContext'
@@ -16,6 +17,8 @@ const NAV_LINKS = [
 export default function NavBar() {
   const pathname = usePathname()
   const { totalItems } = useCart()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   return (
     <nav className="sticky top-0 z-50 bg-white shadow-sm px-4 py-3 flex justify-between items-center">
@@ -27,7 +30,7 @@ export default function NavBar() {
 
       <div className="hidden md:flex gap-6 font-medium text-sm">
         {NAV_LINKS.map(({ href, label }) => {
-          const isActive = pathname === href
+          const isActive = mounted && pathname === href
           return (
             <Link
               key={href}

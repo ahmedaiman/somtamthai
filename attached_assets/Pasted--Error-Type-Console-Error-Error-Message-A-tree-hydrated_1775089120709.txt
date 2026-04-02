@@ -1,0 +1,93 @@
+## Error Type
+Console Error
+
+## Error Message
+A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <HTTPAccessFallbackErrorBoundary pathname="/orders" notFound={{...}} forbidden={undefined} unauthorized={undefined} ...>
+      <RedirectBoundary>
+        <RedirectErrorBoundary router={{...}}>
+          <InnerLayoutRouter url="/orders" tree={[...]} params={{}} cacheNode={{rsc:{...}, ...}} segmentPath={[...]} ...>
+            <SegmentViewNode type="layout" pagePath="(customer)...">
+              <SegmentTrieNode>
+              <script>
+              <script>
+              <CustomerLayout>
+                <CartProvider>
+                  <div className="min-h-scre...">
+                    <NavBar>
+                      <nav className="sticky top...">
+                        <div>
+                        <div className="hidden md:...">
+                          <LinkComponent>
+                          <LinkComponent>
+                          <LinkComponent href="/orders" className="text-brand...">
+                            <a
++                             className="text-brand-terracotta border-b-2 border-brand-terracotta pb-1"
+-                             className="text-gray-600 hover:text-brand-terracotta transition-colors"
+                              ref={function}
+                              onClick={function onClick}
+                              onMouseEnter={function onMouseEnter}
+                              onTouchStart={function onTouchStart}
+                              href="/orders"
+                            >
++                             Orders
+                          <LinkComponent href="/account" className="text-gray-...">
+                            <a
++                             className="text-gray-600 hover:text-brand-terracotta transition-colors"
+-                             className="text-brand-terracotta border-b-2 border-brand-terracotta pb-1"
+                              ref={function}
+                              onClick={function onClick}
+                              onMouseEnter={function onMouseEnter}
+                              onTouchStart={function onTouchStart}
+                              href="/account"
+                            >
++                             Account
+                        ...
+                    <main>
+                    <footer>
+                    <BottomNav>
+                      <div className="md:hidden ...">
+                        <LinkComponent>
+                        <LinkComponent>
+                        <LinkComponent href="/account" className="flex flex-...">
+                          <a
++                           className="flex flex-col items-center transition-colors text-gray-500 hover:text-brand-green"
+-                           className="flex flex-col items-center transition-colors text-brand-terracotta"
+                            ref={function}
+                            onClick={function onClick}
+                            onMouseEnter={function onMouseEnter}
+                            onTouchStart={function onTouchStart}
+                            href="/account"
+                          >
+          ...
+
+
+
+    at a (<anonymous>:null:null)
+    at <unknown> (components/NavBar.tsx:32:13)
+    at Array.map (<anonymous>:null:null)
+    at NavBar (components/NavBar.tsx:29:20)
+    at CustomerLayout (app/(customer)/layout.tsx:14:9)
+
+## Code Frame
+  30 |           const isActive = pathname === href
+  31 |           return (
+> 32 |             <Link
+     |             ^
+  33 |               key={href}
+  34 |               href={href}
+  35 |               className={
+
+Next.js version: 16.2.2 (Turbopack)

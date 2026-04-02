@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { Home, Calendar, User } from 'lucide-react'
 
 const BOTTOM_NAV_ITEMS = [
@@ -12,11 +13,13 @@ const BOTTOM_NAV_ITEMS = [
 
 export default function BottomNav() {
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around py-3 z-50">
       {BOTTOM_NAV_ITEMS.map(({ href, label, Icon }) => {
-        const isActive = pathname === href
+        const isActive = mounted && pathname === href
         return (
           <Link
             key={href}

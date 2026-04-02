@@ -338,7 +338,15 @@ export const TOP_ITEMS = [
   { rank: 3, name: 'Tom Kha Gai', count: 12, trend: 'down' },
 ]
 
-export const REVENUE_CHART = [40, 65, 30, 80, 55, 90, 70]
+export const REVENUE_CHART = [
+  { day: 'Sun', pct: 40, mvr: 1600 },
+  { day: 'Mon', pct: 65, mvr: 2600 },
+  { day: 'Tue', pct: 30, mvr: 1200 },
+  { day: 'Wed', pct: 80, mvr: 3200 },
+  { day: 'Thu', pct: 55, mvr: 2200 },
+  { day: 'Fri', pct: 90, mvr: 3600 },
+  { day: 'Sat', pct: 70, mvr: 2800 },
+]
 
 // ─── Admin Orders (Kanban) ────────────────────────────────────────────────────
 

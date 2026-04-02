@@ -117,26 +117,31 @@ export default function AdminDashboardPage() {
 
         {/* Revenue Chart */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col">
-          <h2 className="font-bold text-gray-900 mb-6">Revenue This Week</h2>
-          <div className="flex-1 flex items-end gap-2 px-2 mt-auto h-48 relative">
-            <div className="absolute inset-0 flex flex-col justify-between z-0">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="border-b border-gray-100 w-full" />
-              ))}
-            </div>
-            {REVENUE_CHART.map((height, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center z-10 group">
-                <div
-                  className="w-full bg-brand-green/20 rounded-t-sm group-hover:bg-brand-green transition-colors relative"
-                  style={{ height: `${height}%` }}
-                >
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    MVR {height * 40}
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="font-bold text-gray-900">Revenue This Week</h2>
+            <span className="text-xs text-brand-green font-bold">MVR 17,200</span>
+          </div>
+          <p className="text-xs text-gray-400 mb-5">Daily breakdown</p>
+          <div className="h-36 relative flex items-end gap-1.5">
+            {[25, 50, 75].map((g) => (
+              <div
+                key={g}
+                className="absolute left-0 right-0 border-t border-dashed border-gray-100"
+                style={{ bottom: `${g}%` }}
+              />
+            ))}
+            {REVENUE_CHART.map((bar) => (
+              <div key={bar.day} className="flex-1 h-full flex flex-col justify-end items-center gap-1 group">
+                <div className="relative w-full flex justify-center">
+                  <div
+                    className="w-full rounded-t-md bg-brand-green/40 group-hover:bg-brand-green transition-all duration-200 cursor-default"
+                    style={{ height: `${(bar.pct / 100) * 144}px` }}
+                  />
+                  <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[9px] px-1.5 py-0.5 rounded-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow z-10">
+                    MVR {bar.mvr.toLocaleString()}
                   </div>
                 </div>
-                <div className="text-[10px] text-gray-400 mt-2 font-medium">
-                  {'SMTWTFS'[i]}
-                </div>
+                <span className="text-[9px] text-gray-400 font-medium flex-shrink-0">{bar.day}</span>
               </div>
             ))}
           </div>
