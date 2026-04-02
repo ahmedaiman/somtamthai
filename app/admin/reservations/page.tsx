@@ -25,8 +25,17 @@ export default function AdminReservationsPage() {
   const cancel = (id: string) =>
     setReservations((prev) => prev.map((r) => (r.id === id ? { ...r, status: 'Cancelled' } : r)))
 
+  const parseResDate = (dateStr: string): string => {
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return dateStr
+    const yyyy = d.getFullYear()
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    return `${yyyy}-${mm}-${dd}`
+  }
+
   const filtered = reservations.filter((r) => {
-    const matchDate = !filterDate || r.date.includes(filterDate)
+    const matchDate = !filterDate || parseResDate(r.date) === filterDate
     const matchStatus = filterStatus === 'All' || r.status === filterStatus
     const matchSearch = !search || r.name.toLowerCase().includes(search.toLowerCase()) || r.phone.includes(search)
     return matchDate && matchStatus && matchSearch
