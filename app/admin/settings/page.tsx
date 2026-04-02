@@ -46,6 +46,13 @@ export default function AdminSettingsPage() {
     setTimeout(() => setSaved(false), 2500)
   }
 
+  const Toast = saved ? (
+    <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-lg text-sm font-medium animate-fade-in">
+      <Check className="w-4 h-4 text-green-400" />
+      Settings saved successfully
+    </div>
+  ) : null
+
   const toggleOrdering = (key: keyof typeof ordering) =>
     setOrdering((o) => ({ ...o, [key]: !o[key] }))
 
@@ -53,6 +60,7 @@ export default function AdminSettingsPage() {
     setNotifications((n) => ({ ...n, [key]: !n[key] }))
 
   return (
+    <>
     <main className="flex-1 p-4 md:p-6 max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -154,5 +162,7 @@ export default function AdminSettingsPage() {
         </section>
       </div>
     </main>
+    {Toast}
+    </>
   )
 }
