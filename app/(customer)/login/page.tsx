@@ -4,17 +4,24 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Phone, ArrowLeft, RotateCcw } from 'lucide-react'
+import { useAuth } from '@/lib/authContext'
 
 const DUMMY_OTP = '123456'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { login, isAuthenticated } = useAuth()
   const [step, setStep] = useState<'phone' | 'otp'>('phone')
   const [phone, setPhone] = useState('')
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
+
+  if (isAuthenticated) {
+    router.replace('/account')
+    return null
+  }
 
   const handlePhoneSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +63,7 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     setTimeout(() => {
+      login(phone)
       router.push('/account')
     }, 600)
   }
@@ -74,7 +82,7 @@ export default function LoginPage() {
             <p className="text-gray-500 text-sm mt-2">
               {step === 'phone'
                 ? 'Enter your phone number to continue.'
-                : `We sent a code to ${phone}`}
+                : `We sent a code to +960 ${phone}`}
             </p>
           </div>
 
@@ -151,7 +159,7 @@ export default function LoginPage() {
               <div className="flex items-center justify-center gap-4 text-sm">
                 <button
                   type="button"
-                  onClick={() => { setStep('phone'); setOtp(['','','','','','']); setError('') }}
+                  onClick={() => { setStep('phone'); setOtp(['', '', '', '', '', '']); setError('') }}
                   className="flex items-center gap-1 text-gray-500 hover:text-brand-green transition"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" /> Change number
@@ -159,7 +167,7 @@ export default function LoginPage() {
                 <span className="text-gray-300">|</span>
                 <button
                   type="button"
-                  onClick={() => setOtp(['','','','','',''])}
+                  onClick={() => setOtp(['', '', '', '', '', ''])}
                   className="flex items-center gap-1 text-gray-500 hover:text-brand-green transition"
                 >
                   <RotateCcw className="w-3.5 h-3.5" /> Resend
