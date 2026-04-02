@@ -30,7 +30,7 @@ type FormData = {
 export default function CheckoutPage() {
   const router = useRouter()
   const { items, totalPrice, clearCart } = useCart()
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, isAuthHydrated } = useAuth()
   const [step, setStep] = useState(0)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [form, setForm] = useState<FormData>({
@@ -44,8 +44,14 @@ export default function CheckoutPage() {
   })
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (isAuthHydrated && !isAuthenticated) {
       setShowAuthModal(true)
+    }
+  }, [isAuthHydrated, isAuthenticated])
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setShowAuthModal(false)
     }
   }, [isAuthenticated])
 

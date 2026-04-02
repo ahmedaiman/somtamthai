@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Phone, ArrowLeft, RotateCcw } from 'lucide-react'
@@ -18,10 +18,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
 
-  if (isAuthenticated) {
-    router.replace('/account')
-    return null
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/account')
+    }
+  }, [isAuthenticated, router])
 
   const handlePhoneSubmit = (e: React.FormEvent) => {
     e.preventDefault()

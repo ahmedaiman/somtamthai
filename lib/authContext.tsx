@@ -10,6 +10,7 @@ export interface AuthUser {
 interface AuthContextValue {
   user: AuthUser | null
   isAuthenticated: boolean
+  isAuthHydrated: boolean
   login: (phone: string, name?: string) => void
   logout: () => void
   updateUser: (updates: Partial<AuthUser>) => void
@@ -21,12 +22,14 @@ const STORAGE_KEY = 'somtam_auth_user'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [isAuthHydrated, setIsAuthHydrated] = useState(false)
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) setUser(JSON.parse(stored))
     } catch {}
+    setIsAuthHydrated(true)
   }, [])
 
   const login = useCallback((phone: string, name?: string) => {
@@ -61,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isAuthHydrated, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )
