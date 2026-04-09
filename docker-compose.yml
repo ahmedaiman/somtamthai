@@ -1,0 +1,71 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: somtam_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: somtam
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: somtamthai
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U somtam -d somtamthai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    image: node:20-alpine
+    container_name: somtam_migrate
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: sh -c "npm install && npx prisma migrate deploy && npx prisma db seed"
+    environment:
+      DATABASE_URL: postgresql://somtam:${DB_PASSWORD}@db:5432/somtamthai
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build: .
+    container_name: somtam_app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URL: postgresql://somtam:${DB_PASSWORD}@db:5432/somtamthai
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRY: ${JWT_EXPIRY:-7d}
+      MSGOWL_API_URL: ${MSGOWL_API_URL}
+      MSGOWL_API_KEY: ${MSGOWL_API_KEY}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+      NODE_ENV: production
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5000/api/settings || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    image: nginx:alpine
+    container_name: somtam_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:

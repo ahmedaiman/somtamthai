@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 
 export interface AuthUser {
+  id: string
   name: string
   phone: string
 }
@@ -11,60 +12,46 @@ interface AuthContextValue {
   user: AuthUser | null
   isAuthenticated: boolean
   isAuthHydrated: boolean
-  login: (phone: string, name?: string) => void
-  logout: () => void
-  updateUser: (updates: Partial<AuthUser>) => void
+  logout: () => Promise<void>
+  updateUser: (updates: Partial<Pick<AuthUser, 'name'>>) => void
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
-
-const STORAGE_KEY = 'somtam_auth_user'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [isAuthHydrated, setIsAuthHydrated] = useState(false)
 
-  useEffect(() => {
+  const refreshUser = useCallback(async () => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) setUser(JSON.parse(stored))
-    } catch {}
-    setIsAuthHydrated(true)
-  }, [])
-
-  const login = useCallback((phone: string, name?: string) => {
-    const digits = phone.replace(/\D/g, '')
-    const formatted = digits.startsWith('960') ? `+${digits}` : `+960 ${digits}`
-    const newUser: AuthUser = {
-      name: name && name.trim().length > 0 ? name.trim() : 'Guest',
-      phone: formatted,
+      const res = await fetch('/api/auth/me')
+      if (res.ok) {
+        const { user: u } = await res.json()
+        setUser(u ?? null)
+      } else {
+        setUser(null)
+      }
+    } catch {
+      setUser(null)
     }
-    setUser(newUser)
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser))
-    } catch {}
   }, [])
 
-  const logout = useCallback(() => {
+  useEffect(() => {
+    refreshUser().finally(() => setIsAuthHydrated(true))
+  }, [refreshUser])
+
+  const logout = useCallback(async () => {
+    await fetch('/api/auth/logout', { method: 'POST' })
     setUser(null)
-    try {
-      localStorage.removeItem(STORAGE_KEY)
-    } catch {}
   }, [])
 
-  const updateUser = useCallback((updates: Partial<AuthUser>) => {
-    setUser((prev) => {
-      if (!prev) return prev
-      const updated = { ...prev, ...updates }
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-      } catch {}
-      return updated
-    })
+  const updateUser = useCallback((updates: Partial<Pick<AuthUser, 'name'>>) => {
+    setUser((prev) => (prev ? { ...prev, ...updates } : prev))
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isAuthHydrated, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isAuthHydrated, logout, updateUser, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )
