@@ -4,8 +4,6 @@ import { useState, useRef, useEffect } from 'react'
 import { Phone, ArrowLeft, RotateCcw, X } from 'lucide-react'
 import { useAuth } from '@/lib/authContext'
 
-const DUMMY_OTP = '123456'
-
 interface OtpModalProps {
   open: boolean
   onClose: () => void
@@ -21,7 +19,7 @@ export default function OtpModal({
   title = 'Sign In',
   subtitle = 'Enter your phone number to continue.',
 }: OtpModalProps) {
-  const { login } = useAuth()
+  const { refreshUser } = useAuth()
   const [step, setStep] = useState<'phone' | 'otp'>('phone')
   const [phone, setPhone] = useState('')
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
@@ -39,7 +37,7 @@ export default function OtpModal({
     }
   }, [open])
 
-  const handlePhoneSubmit = (e: React.FormEvent) => {
+  const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (phone.replace(/\D/g, '').length < 7) {
       setError('Please enter a valid phone number.')
@@ -47,10 +45,23 @@ export default function OtpModal({
     }
     setError('')
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
+    try {
+      const res = await fetch('/api/auth/request-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Failed to send OTP. Try again.')
+        return
+      }
       setStep('otp')
-    }, 800)
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleOtpChange = (index: number, value: string) => {
@@ -69,20 +80,49 @@ export default function OtpModal({
     }
   }
 
-  const handleOtpSubmit = (e: React.FormEvent) => {
+  const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const entered = otp.join('')
-    if (entered !== DUMMY_OTP) {
-      setError('Incorrect OTP. Try 123456.')
-      return
-    }
     setError('')
     setLoading(true)
-    setTimeout(() => {
-      login(phone)
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, code: entered }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Incorrect OTP. Please try again.')
+        return
+      }
+      await refreshUser()
       onSuccess?.()
       onClose()
-    }, 600)
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleResend = async () => {
+    setOtp(['', '', '', '', '', ''])
+    setError('')
+    setLoading(true)
+    try {
+      const res = await fetch('/api/auth/request-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone }),
+      })
+      const data = await res.json()
+      if (!res.ok) setError(data.error ?? 'Failed to resend OTP.')
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (!open) return null
@@ -171,9 +211,6 @@ export default function OtpModal({
                   />
                 ))}
               </div>
-              <p className="text-center text-xs text-gray-400 mt-2">
-                Hint: use <strong>123456</strong>
-              </p>
             </div>
 
             {error && <p className="text-red-500 text-sm text-center">{error}</p>}
@@ -197,8 +234,9 @@ export default function OtpModal({
               <span className="text-gray-300">|</span>
               <button
                 type="button"
-                onClick={() => setOtp(['', '', '', '', '', ''])}
-                className="flex items-center gap-1 text-gray-500 hover:text-brand-green transition"
+                onClick={handleResend}
+                disabled={loading}
+                className="flex items-center gap-1 text-gray-500 hover:text-brand-green transition disabled:opacity-60"
               >
                 <RotateCcw className="w-3.5 h-3.5" /> Resend
               </button>
